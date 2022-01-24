@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class LimitController {
+    // Цей конфіг береться з конфіг сервера.
     @Autowired
     private ConfigBean configBean;
 
