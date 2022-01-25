@@ -1,0 +1,1 @@
+insert into currency_exchange(exchange_from, exchange_to, conversion_multiple, env) values ('USD', 'UAH', 28.5, null)
