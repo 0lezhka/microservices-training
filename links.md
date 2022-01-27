@@ -1,0 +1,14 @@
+Links:
+    currency-conversion-service:
+        http://localhost:8100/currency-conversion?from=USD&to=UAH&quantity=100
+        http://localhost:8100/currency-conversion/feign?from=USD&to=UAH&quantity=100
+    currency-exchange-service:
+        http://localhost:8000/currency-exchange/property?from=USD&to=UAH
+        http://localhost:8000/currency-exchange?from=USD&to=UAH
+    eureka:
+        http://localhost:8761/
+    api-gateway:
+        http://localhost:8765/currency-conversion?from=USD&to=UAH&quantity=100
+        http://localhost:8765/currency-conversion/feign?from=USD&to=UAH&quantity=100
+        http://localhost:8765/currency-exchange/property?from=USD&to=UAH
+        http://localhost:8765/currency-exchange?from=USD&to=UAH

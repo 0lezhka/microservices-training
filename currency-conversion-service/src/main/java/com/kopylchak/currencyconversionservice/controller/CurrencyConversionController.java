@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 
 @RestController
@@ -25,19 +26,21 @@ public class CurrencyConversionController {
     public CurrencyConversion convertCurrency(@RequestParam("from") String from, @RequestParam("to") String to,
                                               @RequestParam("quantity") BigDecimal quantity) {
         CurrencyConversion currencyConversion = restTemplate.getForEntity(
-                "http://localhost:8000/currency-exchange?from={from}&to={to}", CurrencyConversion.class, from, to)
+                        "http://localhost:8000/currency-exchange?from={from}&to={to}", CurrencyConversion.class, from, to)
                 .getBody();
 
-        return new CurrencyConversion(from ,to, quantity, currencyConversion.getConversionMultiple(),
-                currencyConversion.getConversionMultiple().multiply(quantity), currencyConversion.getEnv());
+        return new CurrencyConversion(from, to, quantity, currencyConversion.getConversionMultiple(),
+                currencyConversion.getConversionMultiple().multiply(quantity), currencyConversion.getEnv(),
+                environment.getProperty("local.server.port"));
     }
 
     @GetMapping("/feign")
     public CurrencyConversion convertCurrencyFeign(@RequestParam("from") String from, @RequestParam("to") String to,
-                                              @RequestParam("quantity") BigDecimal quantity) {
+                                                   @RequestParam("quantity") BigDecimal quantity, HttpServletRequest request) {
         CurrencyConversion currencyConversion = currencyExchangeProxy.currencyExchange(from, to);
 
-        return new CurrencyConversion(from ,to, quantity, currencyConversion.getConversionMultiple(),
-                currencyConversion.getConversionMultiple().multiply(quantity), currencyConversion.getEnv());
+        return new CurrencyConversion(from, to, quantity, currencyConversion.getConversionMultiple(),
+                currencyConversion.getConversionMultiple().multiply(quantity), currencyConversion.getEnv(),
+                environment.getProperty("local.server.port"));
     }
 }
