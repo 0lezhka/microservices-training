@@ -1,0 +1,100 @@
+version: '3.7'
+
+services:
+  currency-exchange:
+    image: super0lezhka/microtraining-currency-exchange-service:0.0.1-SNAPSHOT
+#    mem_limit: 700m
+    ports:
+      - "8000:8000"
+    networks:
+      - currency-network
+    depends_on:
+      - naming-server
+      - zipkin
+      - api-gateway
+    environment:
+      #     Тут можна переписувати значення application.properties.
+      #     ВАЖЛИВО, що localhost не буде правильно працювати в докері, бо якщо в Url є Localhost, то він ссилається на Localhost докера, а не компютера юзера
+      eureka.client.service-url.defaultzone: http://naming-server:8761/eureka
+      spring.zipkin.base-url: http://zipkin:9411/
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      spring.rabbitmq.host: rabbitmq
+      spring.zipkin.sender.type: rabbit
+
+  currency-conversion:
+    image: super0lezhka/microtraining-currency-conversion-service:0.0.1-SNAPSHOT
+#    mem_limit: 700m
+    ports:
+      - "8100:8100"
+    networks:
+      - currency-network
+    depends_on:
+      - naming-server
+      - zipkin
+      - api-gateway
+    environment:
+      #     Тут можна переписувати значення application.properties.
+      #     ВАЖЛИВО, що localhost не буде правильно працювати в докері, бо якщо в Url є Localhost, то він ссилається на Localhost докера, а не компютера юзера
+      #     Всі захардкожені url в апці з Loclahost також не працюють
+      eureka.client.service-url.defaultzone: http://naming-server:8761/eureka
+      spring.zipkin.base-url: http://zipkin:9411/
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      spring.rabbitmq.host: rabbitmq
+      spring.zipkin.sender.type: rabbit
+
+  api-gateway:
+    image: super0lezhka/microtraining-api-gateway:0.0.1-SNAPSHOT
+#    mem_limit: 700m
+    ports:
+      - "8765:8765"
+    networks:
+      - currency-network
+    depends_on:
+      - naming-server
+      - zipkin
+    environment:
+      #     Тут можна переписувати значення application.properties.
+      #     ВАЖЛИВО, що localhost не буде правильно працювати в докері, бо якщо в Url є Localhost, то він ссилається на Localhost докера, а не компютера юзера
+      #     Всі захардкожені url в апці з Loclahost також не працюють
+      eureka.client.service-url.defaultzone: http://naming-server:8761/eureka
+      spring.zipkin.base-url: http://zipkin:9411/
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      spring.rabbitmq.host: rabbitmq
+      spring.zipkin.sender.type: rabbit
+
+  naming-server:
+    image: super0lezhka/microtraining-naming-server:0.0.1-SNAPSHOT
+#    mem_limit: 700m
+    ports:
+      - "8761:8761"
+    networks:
+      currency-network:
+
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      currency-network:
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    environment:
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      currency-network:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  currency-network:
